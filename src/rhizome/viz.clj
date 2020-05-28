@@ -25,12 +25,13 @@
   (= "true" (System/getProperty "java.awt.headless")))
 
 (when-not (headless?)
-
-  (def ^:private shortcut-mask
+  (defn ^:private shortcut-mask
+    []
     (.. Toolkit getDefaultToolkit getMenuShortcutKeyMask))
 
   (def ^:private close-key
-    (KeyStroke/getKeyStroke KeyEvent/VK_W (int shortcut-mask))))
+    (delay
+      (KeyStroke/getKeyStroke KeyEvent/VK_W (int (shortcut-mask))))))
 
 (defn create-frame
   "Creates a frame for viewing graphviz images.  Only useful if you don't want to use the default frame."
@@ -41,7 +42,7 @@
           pane (-> image-icon JLabel. JScrollPane.)]
       (doto pane
         (.. (getInputMap JComponent/WHEN_IN_FOCUSED_WINDOW)
-          (put close-key "closeWindow"))
+          (put @close-key "closeWindow"))
         (.. getActionMap
           (put "closeWindow"
             (proxy [AbstractAction] []
